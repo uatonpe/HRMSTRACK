@@ -1,25 +1,23 @@
 <!DOCTYPE html>
 <html lang="mr">
 <head>
-    <!-- Head section तसाच ठेवा -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>स्टाफ हजेरी नोंदणी</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        /* CSS तसाच ठेवा */
         :root { --primary-bg: #f0f2f5; --card-bg: #ffffff; --header-bg-start: #1B4F72; --header-bg-end: #5DADE2; --primary-text: #34495E; --border-color: #e5e7eb; --shadow-light: rgba(0,0,0,0.05); }
         body { font-family: 'Inter', 'Noto Sans Devanagari', sans-serif; background: var(--primary-bg); color: var(--primary-text); margin: 0; }
         header { background: linear-gradient(90deg, var(--header-bg-start), var(--header-bg-end)); padding: 20px 30px; color: white; text-align: center; font-size: 26px; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .main-container { max-width: 900px; margin: 20px auto; padding: 0 15px; }
+        .main-container { max-width: 1100px; margin: 20px auto; padding: 0 15px; }
         .card { background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px var(--shadow-light); }
         .form-group { margin-bottom: 20px; }
         label { font-weight: 600; display: block; margin-bottom: 8px; }
         input, select { width: 100%; border: 1px solid var(--border-color); padding: 10px 12px; border-radius: 6px; font-size: 14px; box-sizing: border-box; }
         button { background-color: var(--header-bg-start); color: white; border: none; padding: 12px 25px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background-color 0.3s ease; font-size: 16px; display: block; margin: 20px auto 0 auto; }
         button:disabled { background-color: #ccc; cursor: not-allowed; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; table-layout: fixed; }
+        th, td { padding: 12px 8px; text-align: left; border-bottom: 1px solid var(--border-color); }
         th { background: #fafafa; }
         #status-message { margin-top: 20px; text-align: center; font-weight: bold; padding: 10px; border-radius: 6px; }
         .success { color: #155724; background-color: #d4edda; border: 1px solid #c3e6cb; }
@@ -30,7 +28,6 @@
 <header>स्टाफ हजेरी नोंदणी</header>
 <div class="main-container">
     <div class="card">
-        <!-- Filters (Unit and Date) तसेच ठेवा -->
         <div class="form-group">
             <label for="unit-select">युनिट निवडा:</label>
             <select id="unit-select">
@@ -42,19 +39,21 @@
             <input type="date" id="report-date">
         </div>
         <hr>
-        <div id="staff-list-container">
+        <div id="staff-list-container" style="overflow-x: auto;">
              <table>
                 <thead>
                     <tr>
-                        <th>कर्मचारी</th>
-                        <th>रजेवर (On Leave)</th> <!-- नवीन कॉलम -->
-                        <th>लॉग इन वेळ</th>
-                        <th>लॉग आऊट वेळ</th>
-                        <th>पॉकेट तास</th>
+                        <th style="width: 18%;">कर्मचारी</th>
+                        <th style="width: 10%;">रजेवर</th>
+                        <th style="width: 12%;">लॉग इन</th>
+                        <th style="width: 12%;">लॉग आऊट</th>
+                        <th style="width: 12%;">पॉकेट तास</th>
+                        <th style="width: 12%;">गावे कव्हर केली</th>
+                        <th style="width: 24%;">फरकाचे कारण</th>
                     </tr>
                 </thead>
                 <tbody id="staff-table-body">
-                    <tr><td colspan="5" style="text-align:center; color:#888;">कृपया युनिट निवडा.</td></tr>
+                    <tr><td colspan="7" style="text-align:center; color:#888;">कृपया युनिट निवडा.</td></tr>
                 </tbody>
             </table>
         </div>
@@ -64,13 +63,11 @@
 </div>
 
 <script>
-    // --- CONFIGURATION ---
     const API_KEY = "AIzaSyC2wjDom0-hJBeAlPCn6d8nhlP9YInG1-E";
     const SHEET_ID = "1gQVKdifnw2MWws-9SQ6rcvR3Py7AAEs5kiMZkhHNQ1c";
     const STAFF_SHEET = "Staff_Master";
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw0tvDeGMwDfMv_zA94_wgznFFNbW_Dj8T0zYsJ3Txc5yEgdyRpTorS3sKwZPNQDhF_/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwVYgXwL9yFrCmAv5lA2X9ImQnGuPxfe36ZV0U5Tc9zU7aqBETzQVBwvc0BpaMLxDc/exec";
 
-    // ... (बाकीचे व्हेरिएबल्स तसेच ठेवा) ...
     let staffMasterData = [];
     const unitSelect = document.getElementById('unit-select');
     const staffTableBody = document.getElementById('staff-table-body');
@@ -79,7 +76,6 @@
     const uploadAllBtn = document.getElementById('upload-all-btn');
 
 
-    // initializeForm() फंक्शन तसेच ठेवा
     async function initializeForm() {
         reportDateInput.valueAsDate = new Date();
         try {
@@ -101,12 +97,11 @@
         }
     }
 
-    // ▼▼▼ unitSelect event listener मध्ये बदल ▼▼▼
     unitSelect.addEventListener('change', () => {
         const selectedUnit = unitSelect.value;
         staffTableBody.innerHTML = '';
         if (!selectedUnit) {
-            staffTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#888;">कृपया युनिट निवडा.</td></tr>';
+            staffTableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#888;">कृपया युनिट निवडा.</td></tr>';
             return;
         }
         
@@ -121,26 +116,25 @@
                 <td><input type="time" class="login-time"></td>
                 <td><input type="time" class="logout-time"></td>
                 <td><input type="number" step="0.1" class="pocket-hours" placeholder="उदा. 8.5"></td>
+                <td><input type="number" class="villages-covered" placeholder="उदा. 5"></td>
+                <td><input type="text" class="reason" placeholder="उदा. मीटिंग होती"></td>
             `;
             staffTableBody.appendChild(row);
         });
     });
 
-    // ▼▼▼ नवीन फंक्शन: चेकबॉक्सनुसार इनपुट फील्ड्स disable/enable करण्यासाठी ▼▼▼
     function toggleLeave(checkbox) {
         const row = checkbox.closest('tr');
-        const timeInputs = row.querySelectorAll('.login-time, .logout-time, .pocket-hours');
-        timeInputs.forEach(input => {
+        const inputs = row.querySelectorAll('.login-time, .logout-time, .pocket-hours, .villages-covered, .reason');
+        inputs.forEach(input => {
             input.disabled = checkbox.checked;
             if (checkbox.checked) {
-                input.value = ''; // रजेवर असल्यास वेळ काढून टाका
+                input.value = '';
             }
         });
     }
 
-    // ▼▼▼ submitAllData फंक्शनमध्ये बदल ▼▼▼
     async function submitAllData() {
-        // ... (सुरुवातीचा भाग तसाच ठेवा) ...
         const staffPayload = []; 
         const staffRows = document.querySelectorAll('#staff-table-body tr');
 
@@ -149,7 +143,6 @@
             const loginTime = row.querySelector('.login-time').value;
             const logoutTime = row.querySelector('.logout-time').value;
 
-            // जर रजेवर असेल किंवा वेळ भरलेली असेल तरच डेटा पाठवा
             if (onLeave || (loginTime && logoutTime)) {
                  staffPayload.push({
                     staffId: row.dataset.staffId,
@@ -157,7 +150,9 @@
                     onLeave: onLeave,
                     loginTime: loginTime,
                     logoutTime: logoutTime,
-                    pocketHours: row.querySelector('.pocket-hours').value || 0
+                    pocketHours: row.querySelector('.pocket-hours').value || 0,
+                    villagesCovered: row.querySelector('.villages-covered').value || 0,
+                    reason: row.querySelector('.reason').value || ''
                 });
             }
         });
@@ -169,7 +164,6 @@
         
         const dataToSend = { date: reportDateInput.value, unit: unitSelect.value, staff: staffPayload };
         
-        // ... (बाकीचे fetch आणि UI अपडेट्स तसेच ठेवा) ...
         uploadAllBtn.textContent = 'अपलोड होत आहे...';
         uploadAllBtn.disabled = true;
         statusMessage.textContent = '';
@@ -178,7 +172,8 @@
         try {
             const response = await fetch(SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors',
+                mode: 'no-cors', 
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dataToSend)
             });
             
