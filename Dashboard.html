@@ -15,7 +15,7 @@
         }
         body { font-family: 'Inter', 'Noto Sans Devanagari', sans-serif; background: var(--primary-bg); margin: 0; padding: 0; color: var(--primary-text); }
         header { background: linear-gradient(90deg, var(--header-bg-start), var(--header-bg-end)); padding: 20px 30px; color: white; text-align: center; font-size: 26px; font-weight: 700; }
-        .main-container { padding: 15px; max-width: 1200px; margin: 0 auto; }
+        .main-container { padding: 15px; max-width: 1400px; margin: 0 auto; } /* Increased width for new column */
         .filters-card, .search-card-content { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
         .filters-card label, .search-card-content label { font-weight: 600; }
         .filters-card input, .filters-card select, .search-card-content input { border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 6px; font-size: 14px; }
@@ -23,7 +23,7 @@
         .filters-card button:hover, .search-card-content button:hover { background-color: var(--accent-color); }
         .kpi-container { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
         .kpi { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px var(--shadow-light); display: flex; align-items: center; gap: 15px; border-left: 5px solid; }
-        .kpi-content .kpi-value { font-size: 32px; font-weight: 700; }
+        .kpi-content .kpi-value { font-size: 28px; font-weight: 700; }
         .kpi-content .kpi-label { font-size: 14px; color: var(--secondary-text); }
         #totalStaff { border-color: #3498DB; } #presentStaff { border-color: #2ECC71; } #onLeave { border-color: #F39C12; } #avgHours { border-color: #E67E22; }
         .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 20px; margin-top: 20px; }
@@ -49,10 +49,11 @@
     </div>
     
     <div class="kpi-container">
+        <!-- KPIs remain the same -->
         <div class="kpi" id="totalStaff"><div class="kpi-content"><div class="kpi-value" id="kpiTotalStaff">0</div><div class="kpi-label">एकूण कर्मचारी</div></div></div>
         <div class="kpi" id="presentStaff"><div class="kpi-content"><div class="kpi-value" id="kpiPresent">0</div><div class="kpi-label">उपस्थित</div></div></div>
         <div class="kpi" id="onLeave"><div class="kpi-content"><div class="kpi-value" id="kpiLeave">0</div><div class="kpi-label">रजेवर</div></div></div>
-        <div class="kpi" id="avgHours"><div class="kpi-content"><div class="kpi-value" id="kpiAvgHours">0.0</div><div class="kpi-label">सरासरी तास</div></div></div>
+        <div class="kpi" id="avgHours"><div class="kpi-content"><div class="kpi-value" id="kpiAvgHours">0 तास 0 मि.</div><div class="kpi-label">सरासरी तास</div></div></div>
     </div>
 
     <div class="dashboard-grid">
@@ -63,7 +64,8 @@
         <div class="card">
             <h3>तपशीलवार हजेरी अहवाल (आजचा)</h3>
             <table id="attendance-table">
-                <thead><tr><th>कर्मचारी</th><th>मूळ गाव</th><th>लॉग इन</th><th>लॉग आऊट</th><th>पॉकेट तास</th><th>प्रत्यक्ष तास</th><th>फरक</th></tr></thead>
+                <!-- ▼▼▼ टेबल हेडरमध्ये 'फरकाचे कारण' हा नवीन कॉलम जोडला ▼▼▼ -->
+                <thead><tr><th>कर्मचारी</th><th>मूळ गाव</th><th>लॉग इन</th><th>लॉग आऊट</th><th>पॉकेट तास</th><th>प्रत्यक्ष तास</th><th>फरक</th><th>फरकाचे कारण</th></tr></thead>
                 <tbody></tbody>
             </table>
         </div>
@@ -80,7 +82,8 @@
         <div style="width: 100%; margin-top: 20px;">
             <h4>शोध परिणाम (Search Results)</h4>
             <table id="history-table">
-                <thead><tr><th>दिनांक</th><th>कर्मचारी</th><th>युनिट</th><th>स्थिती (Status)</th><th>लॉग इन</th><th>लॉग आऊट</th><th>प्रत्यक्ष तास</th></tr></thead>
+                 <!-- ▼▼▼ सर्च टेबल हेडरमध्ये 'फरकाचे कारण' हा नवीन कॉलम जोडला ▼▼▼ -->
+                <thead><tr><th>दिनांक</th><th>कर्मचारी</th><th>युनिट</th><th>स्थिती (Status)</th><th>लॉग इन</th><th>लॉग आऊट</th><th>प्रत्यक्ष तास</th><th>फरकाचे कारण</th></tr></thead>
                 <tbody id="history-table-body"></tbody>
             </table>
         </div>
@@ -88,22 +91,33 @@
 </div>
 
 <script>
-    // --- CONFIGURATION ---
-   const API_KEY = "AIzaSyC2wjDom0-hJBeAlPCn6d8nhlP9YInG1-E";
+    const API_KEY = "AIzaSyC2wjDom0-hJBeAlPCn6d8nhlP9YInG1-E";
     const SHEET_ID = "1gQVKdifnw2MWws-9SQ6rcvR3Py7AAEs5kiMZkhHNQ1c";
     const STAFF_SHEET = "Staff_Master";
-    const ATTENDANCE_SHEET = "Attendance_Log";
+    // ▼▼▼ डेटा रेंज I वरून K पर्यंत वाढवली जेणेकरून 'Reason' कॉलमचा डेटा येईल ▼▼▼
+    const ATTENDANCE_SHEET = "Attendance_Log!A2:K"; 
 
     google.charts.load('current', {'packages':['corechart', 'bar']});
 
     const appState = { allStaff: [], allAttendance: [] };
     document.getElementById('dashboard-date').valueAsDate = new Date();
 
+    function formatHoursMinutes(decimalHours) {
+        if (decimalHours === null || typeof decimalHours === 'undefined' || isNaN(decimalHours)) {
+            return '0 तास 0 मि.';
+        }
+        const sign = decimalHours < 0 ? "-" : "";
+        const absDecimalHours = Math.abs(decimalHours);
+        const hours = Math.floor(absDecimalHours);
+        const minutes = Math.round((absDecimalHours - hours) * 60);
+        return `${sign}${hours} तास ${minutes} मि.`;
+    }
+
     async function initializeDashboard() {
         try {
             document.querySelector('header').innerText = 'डेटा लोड होत आहे...';
             const staffPromise = fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${STAFF_SHEET}!A2:D?key=${API_KEY}`);
-            const attendancePromise = fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${ATTENDANCE_SHEET}!A2:I?key=${API_KEY}`);
+            const attendancePromise = fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${ATTENDANCE_SHEET}?key=${API_KEY}`);
             
             const [staffRes, attendanceRes] = await Promise.all([staffPromise, attendancePromise]);
             
@@ -138,10 +152,12 @@
         
         const hometownMap = new Map(appState.allStaff.map(s => [s[0], s[3]]));
         
+        // ▼▼▼ dashboardData ऑब्जेक्टमध्ये 'reason' जोडले (row[10] म्हणजे कॉलम K) ▼▼▼
         const dashboardData = attendanceForUnit.map(row => ({
             staffName: row[2], hometown: hometownMap.get(row[1]) || 'N/A',
             login: row[4], logout: row[5], pocketHours: parseFloat(row[6] || 0),
-            actualHours: parseFloat(row[7] || 0), status: row[8] || 'Present'
+            actualHours: parseFloat(row[7] || 0), status: row[8] || 'Present',
+            reason: row[10] || '' // Column K from sheet
         }));
 
         updateKPIs(staffInUnit.length, dashboardData);
@@ -154,33 +170,46 @@
         const leaveCount = dailyData.filter(d => d.status === 'Leave').length;
         const presentStaffData = dailyData.filter(d => d.status === 'Present');
         const totalHours = presentStaffData.reduce((sum, item) => sum + item.actualHours, 0);
-        const avgHours = presentCount > 0 ? (totalHours / presentCount).toFixed(1) : '0.0';
+        const avgHoursDecimal = presentCount > 0 ? (totalHours / presentCount) : 0;
 
         document.getElementById('kpiTotalStaff').innerText = totalStaff;
         document.getElementById('kpiPresent').innerText = presentCount;
         document.getElementById('kpiLeave').innerText = leaveCount;
-        document.getElementById('kpiAvgHours').innerText = avgHours;
+        document.getElementById('kpiAvgHours').innerText = formatHoursMinutes(avgHoursDecimal);
     }
 
     function populateTable(data) {
         const tbody = document.querySelector('#attendance-table tbody');
         tbody.innerHTML = '';
         if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">या तारखेसाठी डेटा उपलब्ध नाही.</td></tr>';
+            // ▼▼▼ colspan 7 वरून 8 केला ▼▼▼
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">या तारखेसाठी डेटा उपलब्ध नाही.</td></tr>';
             return;
         }
         data.sort((a,b) => a.staffName.localeCompare(b.staffName)).forEach(item => {
             if (item.status === 'Leave') {
-                tbody.innerHTML += `<tr class="leave-row"><td>${item.staffName}</td><td colspan="6">रजेवर (On Leave)</td></tr>`;
+                // ▼▼▼ colspan 6 वरून 7 केला ▼▼▼
+                tbody.innerHTML += `<tr class="leave-row"><td>${item.staffName}</td><td colspan="7">रजेवर (On Leave)</td></tr>`;
             } else {
-                const difference = (item.actualHours - item.pocketHours).toFixed(2);
-                const diffClass = Math.abs(difference) >= 0.1 ? 'highlight-diff' : '';
-                tbody.innerHTML += `<tr><td>${item.staffName}</td><td>${item.hometown}</td><td>${item.login}</td><td>${item.logout}</td><td>${item.pocketHours.toFixed(2)}</td><td>${item.actualHours.toFixed(2)}</td><td class="${diffClass}">${difference}</td></tr>`;
+                const differenceDecimal = item.actualHours - item.pocketHours;
+                const diffClass = Math.abs(differenceDecimal) >= 0.1 ? 'highlight-diff' : '';
+                 // ▼▼▼ टेबलच्या रांगेत 'reason' साठी नवीन <td> जोडला ▼▼▼
+                tbody.innerHTML += `<tr>
+                    <td>${item.staffName}</td>
+                    <td>${item.hometown}</td>
+                    <td>${item.login}</td>
+                    <td>${item.logout}</td>
+                    <td>${formatHoursMinutes(item.pocketHours)}</td>
+                    <td>${formatHoursMinutes(item.actualHours)}</td>
+                    <td class="${diffClass}">${formatHoursMinutes(differenceDecimal)}</td>
+                    <td>${item.reason}</td>
+                </tr>`;
             }
         });
     }
 
     function drawChart(data) {
+        // Chart logic remains unchanged
         const chartDiv = document.getElementById('hours_chart');
         const presentData = data.filter(item => item.status === 'Present');
         if (presentData.length === 0) {
@@ -190,7 +219,7 @@
         const chartData = [['कर्मचारी', 'प्रत्यक्ष तास', 'पॉकेट तास']];
         presentData.forEach(item => { chartData.push([item.staffName, item.actualHours, item.pocketHours]); });
         const dataTable = google.visualization.arrayToDataTable(chartData);
-        const options = { title: 'प्रत्यक्ष तास vs पॉकेट तास', bars: 'vertical', vAxis: {title: 'कामाचे तास'}, height: 400, colors: ['#1B4F72', '#5DADE2']};
+        const options = { title: 'प्रत्यक्ष तास vs पॉकेट तास', bars: 'vertical', vAxis: {title: 'कामाचे तास (दशांश)'}, height: 400, colors: ['#1B4F72', '#5DADE2']};
         const chart = new google.charts.Bar(chartDiv);
         chart.draw(dataTable, google.charts.Bar.convertOptions(options));
     }
@@ -215,17 +244,22 @@
         const tbody = document.getElementById('history-table-body');
         tbody.innerHTML = '';
         if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">या निकषांमध्ये कोणताही रिपोर्ट सापडला नाही.</td></tr>';
+            // ▼▼▼ colspan 7 वरून 8 केला ▼▼▼
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">या निकषांमध्ये कोणताही रिपोर्ट सापडला नाही.</td></tr>';
             return;
         }
         data.forEach(row => {
             const status = row[8] || 'Present';
+            const actualHoursDecimal = parseFloat(row[7] || 0);
+            const reason = row[10] || ''; // Get reason from Column K
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${row[0]}</td><td>${row[2]}</td><td>${row[3]}</td><td>${status}</td><td>${row[4] || '-'}</td><td>${row[5] || '-'}</td><td>${parseFloat(row[7] || 0).toFixed(2)}</td>`;
+            
             if (status === 'Leave') {
-                tr.classList.add('leave-row');
-                tr.cells[3].colSpan = 4;
-                tr.cells[4].remove(); tr.cells[4].remove(); tr.cells[4].remove();
+                // ▼▼▼ colspan 4 वरून 5 केला ▼▼▼
+                tr.innerHTML = `<td>${row[0]}</td><td>${row[2]}</td><td>${row[3]}</td><td class="leave-row" colspan="5">रजेवर (On Leave)</td>`;
+            } else {
+                 // ▼▼▼ सर्च टेबलच्या रांगेत 'reason' साठी नवीन <td> जोडला ▼▼▼
+                tr.innerHTML = `<td>${row[0]}</td><td>${row[2]}</td><td>${row[3]}</td><td>${status}</td><td>${row[4] || '-'}</td><td>${row[5] || '-'}</td><td>${formatHoursMinutes(actualHoursDecimal)}</td><td>${reason}</td>`;
             }
             tbody.appendChild(tr);
         });
