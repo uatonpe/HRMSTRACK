@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>मासिक वेतन गणना डॅशबोर्ड</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* Global Styles and Variables */
+        :root {
+            --primary-bg: #f5f7fa; /* Light background */
+            --card-bg: #ffffff;
+            --header-bg: #1e3a8a; /* Dark Blue */
+            --accent-color: #3b82f6; /* Blue accent */
+            --primary-text: #1f2937;
+            --secondary-text: #6b7280;
+            --success-color: #10b981;
+            --border-color: #e5e7eb;
+            --shadow-medium: rgba(0, 0, 0, 0.1);
+            --table-header-bg: #374151; /* Dark Grey header */
+            --table-stripe-bg: #f9fafb;
+        }
+        body { font-family: 'Inter', 'Noto Sans Devanagari', sans-serif; background: var(--primary-bg); margin: 0; padding: 0; color: var(--primary-text); line-height: 1.6; }
+        header { background: var(--header-bg); padding: 18px 20px; color: white; text-align: center; font-size: 24px; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .main-container { padding: 20px; max-width: 1200px; margin: 20px auto; }
+        
+        /* Card Styling */
+        .card { background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 8px 20px var(--shadow-medium); margin-bottom: 25px; }
+        .card h3 { margin-top: 0; color: var(--header-bg); font-size: 22px; padding-bottom: 10px; border-bottom: 2px solid var(--border-color); }
+        
+        /* Filter Group Styling (Responsive) */
+        .filter-group { display: flex; flex-wrap: wrap; gap: 15px; align-items: center; margin-bottom: 15px; }
+        .filter-item { display: flex; flex-direction: column; min-width: 150px; flex-grow: 1; }
+        .filter-item label { font-weight: 600; color: var(--secondary-text); margin-bottom: 5px; font-size: 14px; }
+        .filter-group input, .filter-group select { border: 1px solid var(--border-color); padding: 10px 12px; border-radius: 8px; font-size: 14px; width: 100%; box-sizing: border-box; transition: border-color 0.2s; }
+        .filter-group input:focus, .filter-group select:focus { border-color: var(--accent-color); outline: none; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+        
+        /* Button Styling */
+        .action-button { background-color: var(--accent-color); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background-color 0.3s ease, transform 0.1s; align-self: flex-end; /* Align button to bottom in flex container */ }
+        .action-button:hover { background-color: #2563eb; transform: translateY(-1px); }
+        .calculate-button { background-color: var(--success-color); margin-top: 20px; padding: 12px 30px; }
+        .calculate-button:hover { background-color: #059669; }
+
+        /* Table Styling (Responsive) */
+        .table-container { overflow-x: auto; margin-top: 20px; border: 1px solid var(--border-color); border-radius: 10px; }
+        .table-container h4 { padding: 15px 20px 0; margin: 0; font-size: 16px; color: var(--primary-text); }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; /* Ensure minimum width for desktop readability */ }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background: var(--table-header-bg); color: white; font-weight: 600; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; position: sticky; top: 0; }
+        tbody tr:nth-child(even) { background-color: var(--table-stripe-bg); }
+        tbody tr:last-child td { border-bottom: none; }
+        
+        /* Specific Input/Result Styles */
+        .salary-input { width: 100px; text-align: right; border: 1px solid #ccc; padding: 8px; border-radius: 5px; transition: all 0.2s; }
+        .salary-input:focus { border-color: var(--success-color); }
+        .result-salary { font-weight: 700; color: var(--success-color); font-size: 1.1em; }
+        .standard-hours { color: var(--accent-color); font-weight: 500; }
+        .total-hours-display { font-weight: 500; color: #E67E22; }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            .main-container { padding: 10px; margin: 10px auto; }
+            .card { padding: 15px; border-radius: 8px; }
+            header { font-size: 20px; padding: 15px 10px; }
+            .filter-item { min-width: 100%; }
+            .action-button { width: 100%; margin-top: 10px; }
+            .filter-group { flex-direction: column; align-items: stretch; }
+            .salary-input { width: 80px; }
+        }
+    </style>
+</head>
+<body>
+<header>मासिक वेतन गणना डॅशबोर्ड</header>
+<div class="main-container">
+    
+    <!-- MONTHLY SALARY REPORT CARD -->
+    <div class="card">
+        <h3>मासिक वेतन अहवाल तयार करा</h3>
+        
+        <!-- Filter Section -->
+        <div class="filter-group">
+            <div class="filter-item">
+                <label for="salary-unit-filter">युनिट निवडा:</label> 
+                <select id="salary-unit-filter"></select>
+            </div>
+            <div class="filter-item">
+                <label for="startDate">या तारखेपासून:</label> 
+                <input type="date" id="startDate">
+            </div>
+            <div class="filter-item">
+                <label for="endDate">या तारखेपर्यंत:</label> 
+                <input type="date" id="endDate">
+            </div>
+            <button class="action-button" onclick="prepareSalaryInputTable()" style="margin-top: 20px;">मासिक तास लोड करा</button>
+        </div>
+        
+        <!-- Input Basic Salary Table -->
+        <div class="table-container">
+            <h4>१. मूलभूत वेतन इनपुट (Basic Salary Input)</h4>
+            <table id="salary-input-table">
+                <thead><tr><th>कर्मचारी</th><th>युनिट</th><th>एकूण प्रत्यक्ष तास</th><th>प्रमाणित तास (१ महिन्याचे)</th><th>मूलभूत मासिक वेतन (₹)</th></tr></thead>
+                <tbody id="salary-input-table-body">
+                    <tr><td colspan="5" style="text-align:center;">वर फिल्टर निवडा आणि 'मासिक तास लोड करा' बटणावर क्लिक करा.</td></tr>
+                </tbody>
+            </table>
+            <div style="text-align: center; margin-top: 25px;">
+                <button class="action-button calculate-button" onclick="calculateFinalSalary()">वेतन गणना करा</button>
+            </div>
+        </div>
+
+        <!-- Final Salary Report Table -->
+        <div class="table-container" style="margin-top: 30px;">
+            <h4>२. अंतिम वेतन अहवाल (Final Salary Report)</h4>
+            <table id="final-salary-table">
+                <thead><tr><th>कर्मचारी</th><th>एकूण प्रत्यक्ष तास</th><th>प्रमाणित तास</th><th>मूलभूत वेतन (₹)</th><th>गणना केलेले अंतिम वेतन (₹)</th></tr></thead>
+                <tbody id="final-salary-table-body">
+                    <tr><td colspan="5" style="text-align:center;">गणना केल्यानंतर परिणाम येथे दिसतील.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Configuration - REPLACE THESE WITH YOUR ACTUAL VALUES
+    const API_KEY = "AIzaSyC2wjDom0-hJBeAlPCn6d8nhlP9YInG1-E"; 
+    const SHEET_ID = "1gQVKdifnw2MWws-9SQ6rcvR3Py7AAEs5kiMZkhHNQ1c"; 
+    const STAFF_SHEET = "Staff_Master!A2:D"; // Columns: ID, Name, Unit, Hometown
+    const ATTENDANCE_SHEET = "Attendance_Log!A2:K"; // Columns: Date, ID, Name, Unit, Login, Logout, PocketHrs, ActualHrs, Status, CoveredVillage, Reason
+    const STANDARD_MONTHLY_HOURS = 180; // The required 180 hours per month
+
+    const appState = { 
+        allStaff: [], 
+        allAttendance: [],
+        staffBasicSalary: {} // To store temporary basic salary inputs
+    };
+    
+    // --- Utility Functions ---
+
+    // Converts decimal hours to "X तास Y मि." format
+    function formatHoursMinutes(decimalHours) {
+        if (decimalHours === null || typeof decimalHours === 'undefined' || isNaN(decimalHours) || decimalHours === 0) {
+            return '0 तास 0 मि.';
+        }
+        const absDecimalHours = Math.abs(decimalHours);
+        const hours = Math.floor(absDecimalHours);
+        const minutes = Math.round((absDecimalHours - hours) * 60);
+        return `${hours} तास ${minutes} मि.`;
+    }
+    
+    // Parses DD/MM/YYYY date format used in Google Sheet
+    function parseDateGB(dateString) {
+        if (!dateString) return null;
+        const parts = dateString.split('/');
+        // Date format DD/MM/YYYY -> Month is 0-indexed
+        return new Date(parts[2], parts[1] - 1, parts[0]);
+    }
+
+    // --- Data Loading and Initialization ---
+
+    async function initializeDashboard() {
+        document.querySelector('header').innerText = 'डेटा लोड होत आहे... कृपया थांबा.';
+        
+        try {
+            const staffPromise = fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${STAFF_SHEET}?key=${API_KEY}`);
+            const attendancePromise = fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${ATTENDANCE_SHEET}?key=${API_KEY}`);
+            
+            const results = await Promise.allSettled([staffPromise, attendancePromise]);
+
+            const staffRes = results[0].value;
+            const attendanceRes = results[1].value;
+
+            if (!staffRes || !staffRes.ok) throw new Error("Staff Master डेटा लोड करताना त्रुटी.");
+            if (!attendanceRes || !attendanceRes.ok) throw new Error("Attendance Log डेटा लोड करताना त्रुटी.");
+
+            const staffData = await staffRes.json();
+            const attendanceData = await attendanceRes.json();
+
+            appState.allStaff = staffData.values || [];
+            appState.allAttendance = attendanceData.values || [];
+            
+            // Populate Unit Filters (Only active units)
+            const units = [...new Set(appState.allStaff.map(row => row[2]).filter(Boolean))].sort();
+            const unitFilterSalary = document.getElementById('salary-unit-filter');
+
+            unitFilterSalary.innerHTML = units.map(unit => `<option value="${unit}">${unit}</option>`).join('');
+            
+        } catch (error) {
+            alert("डेटा लोड करताना मोठी त्रुटी: " + error.message);
+        } finally {
+            document.querySelector('header').innerText = 'मासिक वेतन गणना डॅशबोर्ड';
+        }
+    }
+    
+    // --- Salary Calculation Logic ---
+
+    function prepareSalaryInputTable() {
+        const unit = document.getElementById('salary-unit-filter').value;
+        const startDateInput = document.getElementById('startDate').value;
+        const endDateInput = document.getElementById('endDate').value;
+        const tbody = document.getElementById('salary-input-table-body');
+        
+        tbody.innerHTML = '';
+        document.getElementById('final-salary-table-body').innerHTML = '<tr><td colspan="5" style="text-align:center;">गणना केल्यानंतर परिणाम येथे दिसतील.</td></tr>';
+
+        if (!startDateInput || !endDateInput || unit === '') {
+            alert('कृपया युनिट, सुरू होण्याची तारीख आणि समाप्तीची तारीख निवडा.');
+            return;
+        }
+
+        const startDate = new Date(startDateInput);
+        const endDate = new Date(endDateInput);
+        // Set end date time to end of the day for inclusive filtering
+        endDate.setHours(23, 59, 59, 999); 
+        
+        // 1. Filter attendance data by date range and unit
+        const filteredAttendance = appState.allAttendance.filter(row => {
+            // Row structure check: [0]=Date, [2]=Name, [3]=Unit, [7]=ActualHours, [8]=Status
+            if (!row || !row[0] || row[3] !== unit) return false;
+            
+            const reportDate = parseDateGB(row[0]);
+            
+            return reportDate >= startDate && reportDate <= endDate;
+        });
+
+        if (filteredAttendance.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">या श्रेणीमध्ये या युनिटसाठी हजेरीचा डेटा उपलब्ध नाही.</td></tr>';
+            return;
+        }
+
+        // 2. Aggregate actual hours by staff name
+        const staffHoursMap = new Map(); // Key: Staff Name, Value: Total Actual Hours
+        filteredAttendance.forEach(row => {
+            const staffName = row[2];
+            const status = row[8] || 'Present';
+            const actualHours = parseFloat(row[7] || 0);
+            
+            // Only aggregate hours if status is 'Present'
+            if (status === 'Present' && staffName) {
+                const currentHours = staffHoursMap.get(staffName) || 0;
+                staffHoursMap.set(staffName, currentHours + actualHours);
+            }
+        });
+
+        // Sort staff alphabetically for consistent display
+        const sortedStaff = Array.from(staffHoursMap.keys()).sort();
+
+        // 3. Prepare table rows for salary input
+        if (sortedStaff.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">या श्रेणीमध्ये काम केलेल्या कर्मचाऱ्यांचा डेटा उपलब्ध नाही.</td></tr>';
+            return;
+        }
+
+        sortedStaff.forEach(staffName => {
+            const totalHours = staffHoursMap.get(staffName);
+            // Retrieve previously entered salary if available
+            const basicSalary = appState.staffBasicSalary[staffName] || ''; 
+            
+            // Generate a safe ID for the input field
+            const safeStaffId = staffName.replace(/[^a-zA-Z0-9]/g, '_'); 
+            
+            tbody.innerHTML += `
+                <tr data-staff-name="${staffName}" data-total-hours="${totalHours}">
+                    <td>${staffName}</td>
+                    <td>${unit}</td>
+                    <td class="total-hours-display">${formatHoursMinutes(totalHours)} <br> (${totalHours.toFixed(2)} दशांश)</td>
+                    <td class="standard-hours">${STANDARD_MONTHLY_HOURS} तास</td>
+                    <td>
+                        <input type="number" step="1" min="0" class="salary-input" id="basic-salary-${safeStaffId}" value="${basicSalary}" placeholder="उदा. 20000">
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    function calculateFinalSalary() {
+        const tbodyInput = document.getElementById('salary-input-table-body');
+        const tbodyFinal = document.getElementById('final-salary-table-body');
+        tbodyFinal.innerHTML = '';
+        let calculationPerformed = false;
+
+        const inputRows = tbodyInput.querySelectorAll('tr[data-staff-name]');
+
+        if (inputRows.length === 0) {
+            alert('कृपया प्रथम "मासिक तास लोड करा" आणि मूलभूत वेतन भरा.');
+            return;
+        }
+
+        inputRows.forEach(row => {
+            const staffName = row.getAttribute('data-staff-name');
+            const totalHours = parseFloat(row.getAttribute('data-total-hours'));
+            
+            const safeStaffId = staffName.replace(/[^a-zA-Z0-9]/g, '_'); 
+            const salaryInput = document.getElementById(`basic-salary-${safeStaffId}`);
+            
+            const basicSalary = parseFloat(salaryInput.value || 0);
+            
+            // Store input salary for persistence
+            appState.staffBasicSalary[staffName] = basicSalary;
+
+            let finalSalary = 0;
+            
+            if (basicSalary > 0) {
+                // Calculate ratio: Actual Hours / Standard Hours (capped at 1)
+                const ratio = Math.min(1, totalHours / STANDARD_MONTHLY_HOURS);
+                finalSalary = basicSalary * ratio;
+                calculationPerformed = true;
+            }
+
+            tbodyFinal.innerHTML += `
+                <tr>
+                    <td>${staffName}</td>
+                    <td>${formatHoursMinutes(totalHours)} (${totalHours.toFixed(2)})</td>
+                    <td>${STANDARD_MONTHLY_HOURS}</td>
+                    <td>₹ ${basicSalary.toLocaleString('en-IN', {minimumFractionDigits: 0})}</td>
+                    <td class="result-salary">₹ ${finalSalary.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                </tr>
+            `;
+        });
+
+        if (!calculationPerformed) {
+             tbodyFinal.innerHTML = '<tr><td colspan="5" style="text-align:center;">वेतन गणना करण्यासाठी मूलभूत वेतन भरा.</td></tr>';
+        }
+    }
+    
+    // Start the dashboard
+    window.onload = initializeDashboard;
+</script>
+</body>
+</html>
